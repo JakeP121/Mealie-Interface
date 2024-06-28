@@ -8,7 +8,7 @@ Exposes Mealie API hooks to Home Assistant to be called by services
 - Add https://github.com/JakeP121/Mealie-Interface to your repositories.
 - Mealie Interface should now show up on your HACS integration page, click it and click download.
 - Restart Home Assistant.
-### Option B (Manual Installation
+### Option B (Manual Installation)
 - Copy everything in https://github.com/JakeP121/Mealie-Interface/tree/main/custom_components/ to your \<config\>/custom_components/ folder
 - Restart Home Assistant.
 
