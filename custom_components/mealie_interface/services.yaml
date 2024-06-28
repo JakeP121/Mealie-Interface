@@ -1,0 +1,49 @@
+add_to_shopping_list:
+  name: Add To Shopping List
+  description: Adds an item to the Mealie shopping list
+  fields:
+    item:
+      name: "Item"
+      description: "The item to add."
+      example: "Chicken Nuggets"
+      required: true
+      selector:
+        text:
+    quantity:
+      name: "Quantity"
+      description: "The amount of items to add (optional, defaults to 1)."
+      example: "1"
+      required: false
+      selector:
+        number:
+          min: 1
+          max: 20
+    shopping_list:
+      name: "Shopping List"
+      description: "The shopping list to add the item too (optional, defaults to 'Shopping List')."
+      example: "Weekly Shop"
+      required: false
+      selector:
+        text:
+get_shopping_list:
+  name: Get Shopping List
+  description: Gets data about a shopping list. If you want data about the items on the list, use 'Get Shopping List Items'
+  fields:
+    shopping_list:
+      name: "Shopping List"
+      description: "The shopping list to find (optional, defaults to 'Shopping List')."
+      example: "Weekly Shop"
+      required: false
+      selector:
+        text:
+get_shopping_list_items:
+  name: Get Shopping List Items
+  description: Gets the current items on a shopping list
+  fields:
+    shopping_list:
+      name: "Shopping List"
+      description: "The shopping list to find (optional, defaults to 'Shopping List')."
+      example: "Weekly Shop"
+      required: false
+      selector:
+        text:
