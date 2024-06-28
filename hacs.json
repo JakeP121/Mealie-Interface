@@ -1,0 +1,6 @@
+{
+  "name": "Mealie Interface",
+  "domains": ["mealie_interface"],
+  "homeassistant": "2024.6.0",
+  "iot_class": ["cloud_polling"]
+}
