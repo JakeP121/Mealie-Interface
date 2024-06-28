@@ -6,6 +6,8 @@ from homeassistant.core import SupportsResponse
 
 from .const import (
     CONF_ITEM,
+    CONF_NOTIFY_DEVICE,
+    CONF_NOTIFY_DEVICE_DEFAULT,
     CONF_PASSWORD,
     CONF_QUANTITY,
     CONF_QUANTITY_DEFAULT,
@@ -37,39 +39,54 @@ def setup(hass, config):
         """Set an entity's state."""
         hass.states.set(DOMAIN + "." + entity_name, state)
 
+    async def send_notification(entity_id, data):
+        """Send a notification to a device."""
+        await hass.services.async_call("notify", entity_id, data)
+
     #
     # Add to Shopping List
     #
-    def service_add_to_shopping_list(call):
+    async def service_add_to_shopping_list(call):
         """Handle the add_to_shopping_list service call."""
+        # Get input from service call
         item_name = call.data.get(CONF_ITEM)
         quantity = call.data.get(CONF_QUANTITY, CONF_QUANTITY_DEFAULT)
         shopping_list_name = call.data.get(
             CONF_SHOPPING_LIST, CONF_SHOPPING_LIST_DEFAULT
         )
 
-        mealie = Mealie.Mealie(api_url, username, password)
-        response_item = None
+        # Log into Mealie
+        mealie = await hass.async_add_executor_job(
+            Mealie.Mealie, api_url, username, password
+        )
+
+        response = None
         try:
-            response_item = mealie.find_and_add_to_shopping_list(
-                item_name, quantity, shopping_list_name
+            mealie_item = await hass.async_add_executor_job(
+                mealie.find_and_add_to_shopping_list,
+                item_name,
+                quantity,
+                shopping_list_name,
             )
+
+            response = {
+                "success": True,
+                "response": "Added " + item_name + " to your shopping list",
+                "item": mealie_item,
+                "shopping_list": shopping_list_name,
+            }
         except Exceptions.MealieException as exc:
             exc.log_exception()
-            return {"success": False, "response": str(exc)}
+            response = {"success": False, "response": str(exc)}
 
-        if response_item is None:
-            return {
-                "success": False,
-                "response": "Unknown exception: find_and_add_to_shopping_list didn't raise an exception but also didn't return an Item",
-            }
+        # Handle (optional) notification
+        notify_device = call.data.get(CONF_NOTIFY_DEVICE, CONF_NOTIFY_DEVICE_DEFAULT)
+        if notify_device is not None:
+            await send_notification(
+                notify_device, {"title": "Mealie", "message": response["response"]}
+            )
 
-        return {
-            "success": True,
-            "response": "Added to shopping list",
-            "item": response_item,
-            "shopping_list": shopping_list_name,
-        }
+        return response
 
     hass.services.register(
         domain=DOMAIN,
@@ -104,7 +121,7 @@ def setup(hass, config):
 
         return {
             "success": True,
-            "response": "Found shopping list",
+            "response": "Here's your shopping list.",
             "shopping_list": response_shopping_list,
         }
 
@@ -135,7 +152,7 @@ def setup(hass, config):
 
         return {
             "success": True,
-            "response": "Found shopping list",
+            "response": "Here's what's on your shopping list.",
             "shopping_list": shopping_list_name,
             "items": response_items,
         }

@@ -18,12 +18,16 @@ CONF_URL = "url"
 CONF_SHOPPING_LIST = "shopping_list"
 CONF_SHOPPING_LIST_DEFAULT = "Shopping List"
 
+CONF_NOTIFY_DEVICE = "notify_device"
+CONF_NOTIFY_DEVICE_DEFAULT = None
+
 SERVICE_ADD_TO_SHOPPING_LIST_NAME = "add_to_shopping_list"
 SERVICE_ADD_TO_SHOPPING_LIST_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_ITEM): cv.string,
         vol.Optional(CONF_QUANTITY): int,
         vol.Optional(CONF_SHOPPING_LIST): cv.string,
+        vol.Optional(CONF_NOTIFY_DEVICE): cv.string,
     }
 )
 

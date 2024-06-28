@@ -25,6 +25,13 @@ add_to_shopping_list:
       required: false
       selector:
         text:
+    notify_device:
+      name: "Notify Device"
+      description: "Sends a response notification to a device (optional, defaults to None)."
+      example: "mobile_app_jakes_iphone"
+      required: false
+      selector:
+        text:
 get_shopping_list:
   name: Get Shopping List
   description: Gets data about a shopping list. If you want data about the items on the list, use 'Get Shopping List Items'
