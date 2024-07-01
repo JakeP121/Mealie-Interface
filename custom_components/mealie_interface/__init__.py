@@ -42,7 +42,9 @@ def setup(hass, config):
 
     async def send_notification(entity_id, data):
         """Send a notification to a device."""
-        await hass.services.async_call("notify", entity_id, data)
+        await hass.services.async_call(
+            "notify", "mobile_app_" + entity_id.removeprefix("device_tracker."), data
+        )
 
     #
     # Add to Shopping List
