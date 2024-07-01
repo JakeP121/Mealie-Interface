@@ -33,7 +33,8 @@ def setup(hass, config):
 
     username = config[DOMAIN][CONF_USERNAME]
     password = config[DOMAIN][CONF_PASSWORD]
-    api_url = config[DOMAIN][CONF_URL] + "/api"
+    base_url = config[DOMAIN][CONF_URL]
+    api_url = base_url + "/api"
 
     def set_state(entity_name, state):
         """Set an entity's state."""
@@ -62,11 +63,15 @@ def setup(hass, config):
 
         response = None
         try:
+            shopping_list = await hass.async_add_executor_job(
+                mealie.get_shopping_list, shopping_list_name
+            )
+
             mealie_item = await hass.async_add_executor_job(
                 mealie.find_and_add_to_shopping_list,
                 item_name,
+                shopping_list,
                 quantity,
-                shopping_list_name,
             )
 
             response = {
@@ -82,9 +87,21 @@ def setup(hass, config):
         # Handle (optional) notification
         notify_device = call.data.get(CONF_NOTIFY_DEVICE, CONF_NOTIFY_DEVICE_DEFAULT)
         if notify_device is not None:
-            await send_notification(
-                notify_device, {"title": "Mealie", "message": response["response"]}
-            )
+            try:
+                shopping_list_url = base_url + "/shopping-lists/" + shopping_list["id"]
+                await send_notification(
+                    notify_device,
+                    {
+                        "title": "Mealie",
+                        "message": response["response"],
+                        "data": {
+                            "url": shopping_list_url,
+                            "clickAction": shopping_list_url,
+                        },
+                    },
+                )
+            except Exceptions.MealieException as exc:
+                exc.log_exception()  # Non vital, just log it
 
         return response
 

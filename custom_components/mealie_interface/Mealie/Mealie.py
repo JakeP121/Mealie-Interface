@@ -34,14 +34,9 @@ class Mealie(APIHandler):
         return {"Authorization": "Bearer " + self.bearer_token}
 
     def find_and_add_to_shopping_list(
-        self,
-        item_name: str,
-        quantity: int = 1,
-        shopping_list_name: str = "Shopping List",
+        self, item_name: str, shopping_list, quantity: int = 1
     ):
         """Find an item and add it to the shopping list."""
-        shopping_list = self.get_shopping_list(shopping_list_name)
-
         # Ignore if the item already exists in the shopping list (disabled since I added quantity)
         ignore_if_exists: bool = False
         if ignore_if_exists:
