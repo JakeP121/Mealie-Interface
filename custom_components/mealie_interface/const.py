@@ -5,6 +5,7 @@ import voluptuous as vol
 import homeassistant.helpers.config_validation as cv
 
 DOMAIN = "mealie_interface"
+VERSION = '0.1.1'
 
 CONF_ITEM = "item"
 
