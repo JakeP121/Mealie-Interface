@@ -18,6 +18,8 @@ from .const import (
     DOMAIN,
     SERVICE_ADD_TO_SHOPPING_LIST_NAME,
     SERVICE_ADD_TO_SHOPPING_LIST_SCHEMA,
+    SERVICE_CHECK_FROM_SHOPPING_LIST_NAME,
+    SERVICE_CHECK_FROM_SHOPPING_LIST_SCHEMA,
     SERVICE_GET_SHOPPING_LIST_ITEMS_NAME,
     SERVICE_GET_SHOPPING_LIST_ITEMS_SCHEMA,
     SERVICE_GET_SHOPPING_LIST_NAME,
@@ -112,6 +114,69 @@ def setup(hass, config):
         service=SERVICE_ADD_TO_SHOPPING_LIST_NAME,
         service_func=service_add_to_shopping_list,
         schema=SERVICE_ADD_TO_SHOPPING_LIST_SCHEMA,
+        supports_response=SupportsResponse.OPTIONAL,
+    )
+
+    #
+    # Check from Shopping List
+    #
+    async def service_check_from_shopping_list(call):
+        """Handle the check_from_shopping_list service call."""
+        # Get input from service call
+        item_name = call.data.get(CONF_ITEM)
+        shopping_list_name = call.data.get(
+            CONF_SHOPPING_LIST, CONF_SHOPPING_LIST_DEFAULT
+        )
+
+        # Log into Mealie
+        mealie = await hass.async_add_executor_job(
+            Mealie.Mealie, api_url, username, password
+        )
+
+        response = None
+        try:
+            shopping_list = await hass.async_add_executor_job(
+                mealie.get_shopping_list, shopping_list_name
+            )
+
+            shopping_list_items = await hass.async_add_executor_job(
+                mealie.get_shopping_list_items, shopping_list
+            )
+
+            matching_items = [
+                item
+                for item in shopping_list_items
+                if item["food"]["name"].lower() == item_name.lower()
+            ]
+            if len(matching_items) <= 0:
+                return {
+                    "success": False,
+                    "response": "Could not find item "
+                    + item_name
+                    + " in shopping list",
+                }
+
+            await hass.async_add_executor_job(
+                mealie.check_item_from_shopping_list, matching_items[0]
+            )
+
+            response = {
+                "success": True,
+                "response": "Checked off " + item_name + " from your shopping list",
+                "item": "mealie_item",
+                "shopping_list": shopping_list_name,
+            }
+        except Exceptions.MealieException as exc:
+            exc.log_exception()
+            response = {"success": False, "response": str(exc)}
+
+        return response
+
+    hass.services.register(
+        domain=DOMAIN,
+        service=SERVICE_CHECK_FROM_SHOPPING_LIST_NAME,
+        service_func=service_check_from_shopping_list,
+        schema=SERVICE_CHECK_FROM_SHOPPING_LIST_SCHEMA,
         supports_response=SupportsResponse.OPTIONAL,
     )
 

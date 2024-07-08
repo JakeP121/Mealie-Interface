@@ -1,7 +1,8 @@
 {
-    "services": {
-      "add_to_shopping_list": "mdi:cart-plus",
-      "get_shopping_list": "mdi:list-box-outline",
-      "get_shopping_list_items": "mdi:list-box-outline"
-    }
+  "services": {
+    "add_to_shopping_list": "mdi:cart-plus",
+    "check_from_shopping_list": "mdi:cart-check",
+    "get_shopping_list": "mdi:list-box-outline",
+    "get_shopping_list_items": "mdi:list-box-outline"
   }
+}

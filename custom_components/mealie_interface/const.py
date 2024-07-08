@@ -5,7 +5,7 @@ import voluptuous as vol
 import homeassistant.helpers.config_validation as cv
 
 DOMAIN = "mealie_interface"
-VERSION = '0.1.1'
+VERSION = "0.2.0"
 
 CONF_ITEM = "item"
 
@@ -29,6 +29,14 @@ SERVICE_ADD_TO_SHOPPING_LIST_SCHEMA = vol.Schema(
         vol.Optional(CONF_QUANTITY): int,
         vol.Optional(CONF_SHOPPING_LIST): cv.string,
         vol.Optional(CONF_NOTIFY_DEVICE): cv.string,
+    }
+)
+
+SERVICE_CHECK_FROM_SHOPPING_LIST_NAME = "check_from_shopping_list"
+SERVICE_CHECK_FROM_SHOPPING_LIST_SCHEMA = vol.Schema(
+    {
+        vol.Required(CONF_ITEM): cv.string,
+        vol.Optional(CONF_SHOPPING_LIST): cv.string,
     }
 )
 

@@ -154,3 +154,15 @@ class Mealie(APIHandler):
             url, data=json.dumps(data), headers=self.get_authorised_header(), timeout=10
         )
         self.check_response(r)
+
+    def check_item_from_shopping_list(self, item):
+        """Check an item to remove it from the shopping list."""
+        url = self.construct_endpoint_url("groups/shopping/items/" + item["id"])
+
+        data = item
+        data["checked"] = True
+
+        r = requests.put(
+            url, data=json.dumps(data), headers=self.get_authorised_header(), timeout=10
+        )
+        self.check_response(r)

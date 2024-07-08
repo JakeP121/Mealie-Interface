@@ -34,6 +34,25 @@ add_to_shopping_list:
         entity:
           domain: device_tracker
 
+check_from_shopping_list:
+  name: Check From Shopping List
+  description: Checks out an item from the shopping list
+  fields:
+    item:
+      name: "Item"
+      description: "The item to check out."
+      example: "Chicken Nuggets"
+      required: true
+      selector:
+        text:
+    shopping_list:
+      name: "Shopping List"
+      description: "The shopping list to add the item too (optional, defaults to 'Shopping List')."
+      example: "Weekly Shop"
+      required: false
+      selector:
+        text:
+
 get_shopping_list:
   name: Get Shopping List
   description: Gets data about a shopping list. If you want data about the items on the list, use 'Get Shopping List Items'
