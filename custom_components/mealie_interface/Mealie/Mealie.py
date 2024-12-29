@@ -2,10 +2,11 @@
 
 import json
 
+from packaging.version import Version
 import requests
 
 from ..REST.API import APIHandler
-from .Exceptions import AlreadyExists, CouldNotFind, InvalidQuery
+from .Exceptions import AlreadyExists, CouldNotFind, InvalidQuery, LoginFailed
 
 
 class Mealie(APIHandler):
@@ -16,6 +17,10 @@ class Mealie(APIHandler):
         super().__init__(url)
         self.username = username
         self.bearer_token = self.login(password=password)
+        if not self.bearer_token:
+            raise LoginFailed(username=username)
+
+        self.version = self.get_mealie_version()
 
     def login(self, password: str) -> bool:
         """Login to get the bearer token."""
@@ -32,6 +37,14 @@ class Mealie(APIHandler):
     def get_authorised_header(self):
         """Create a header dict that includes our authorised bearer token."""
         return {"Authorization": "Bearer " + self.bearer_token}
+
+    def get_mealie_version(self) -> Version:
+        """GET request for the Mealie API version."""
+        url = self.construct_endpoint_url("app/about")
+        response = requests.get(url, headers=self.get_authorised_header(), timeout=10)
+        self.check_response(response)
+
+        return Version(response.json()["version"])
 
     def find_and_add_to_shopping_list(
         self, item_name: str, shopping_list, quantity: int = 1
@@ -59,7 +72,10 @@ class Mealie(APIHandler):
 
     def get_shopping_list(self, shopping_list_name: str):
         """Get a shopping list object."""
-        url = self.construct_endpoint_url("groups/shopping/lists")
+        if self.version.major >= 2:
+            url = self.construct_endpoint_url("households/shopping/lists")
+        else:
+            url = self.construct_endpoint_url("groups/shopping/lists")
 
         response = requests.get(url, headers=self.get_authorised_header(), timeout=10)
         self.check_response(response)
@@ -83,7 +99,11 @@ class Mealie(APIHandler):
         ignore_completed: bool = True,
     ):
         """Get items in a shopping list."""
-        url = self.construct_endpoint_url("groups/shopping/items")
+        url = ""
+        if self.version.major >= 2:
+            url = self.construct_endpoint_url("households/shopping/items")
+        else:
+            url = self.construct_endpoint_url("groups/shopping/items")
 
         response = requests.get(url, headers=self.get_authorised_header(), timeout=10)
         self.check_response(response)
@@ -122,7 +142,11 @@ class Mealie(APIHandler):
 
     def add_item_to_shopping_list(self, item, quantity, shopping_list):
         """Add an item to the shopping list."""
-        url = self.construct_endpoint_url("groups/shopping/items")
+        url = ""
+        if self.version.major >= 2:
+            url = self.construct_endpoint_url("households/shopping/items")
+        else:
+            url = self.construct_endpoint_url("groups/shopping/items")
 
         data = {
             "quantity": quantity,  # Omitted anyway
@@ -135,7 +159,7 @@ class Mealie(APIHandler):
                 "aliases": [],
                 "label": item["label"],
                 "createdAt": item["createdAt"],
-                "updateAt": item["updateAt"],
+                "updateAt": "",
             },
             "note": "",
             "isFood": True,
@@ -157,7 +181,11 @@ class Mealie(APIHandler):
 
     def check_item_from_shopping_list(self, item):
         """Check an item to remove it from the shopping list."""
-        url = self.construct_endpoint_url("groups/shopping/items/" + item["id"])
+        url = ""
+        if self.version.major >= 2:
+            url = self.construct_endpoint_url("households/shopping/items/" + item["id"])
+        else:
+            url = self.construct_endpoint_url("groups/shopping/items/" + item["id"])
 
         data = item
         data["checked"] = True

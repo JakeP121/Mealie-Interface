@@ -17,6 +17,19 @@ class MealieException(Exception):
         logging.warning(str(self))
 
 
+class LoginFailed(MealieException):
+    """Could not log into this account."""
+
+    def __init__(self, *args: object, username: str) -> None:
+        """Init."""
+        super().__init__(*args)
+        self.username = username
+
+    def __str__(self) -> str:
+        """User friendly string representation of this object."""
+        return "Failed to log in and get a bearer code for user " + self.username
+
+
 class InvalidQuery(MealieException):
     """There's a problem with the query parameters."""
 
